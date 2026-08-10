@@ -28,7 +28,18 @@ python3 kindle2books.py "My Clippings.txt" --books "red mars"
 
 # Actually import (quits Books, backs up the annotation DB to backups/<timestamp>/ first)
 python3 kindle2books.py "My Clippings.txt" --apply
+
+# One-command workflow: pull My Clippings.txt from a USB-connected Kindle, then import
+python3 kindle2books.py --from-kindle --apply
 ```
+
+`--from-kindle` fetches the clippings file straight off the Kindle into the
+clippings path (default `./My Clippings.txt`), then continues as normal.
+It supports both transports: older Kindles that mount as a USB drive
+(`/Volumes/Kindle/documents/My Clippings.txt`) and newer Kindles / Scribe
+that use MTP. The MTP path requires libmtp (`brew install libmtp`) and matches
+any device identifying as Kindle / Scribe / Amazon / Lab126. Quit OpenMTP or
+Android File Transfer first — only one program can hold the MTP connection.
 
 Details:
 
@@ -62,4 +73,5 @@ cp backups/<timestamp>/AEAnnotation_v10312011_1727_local.sqlite* \
 - `kindle2books.py` — CLI entry point
 - `clippy/parse_clippings.py` — My Clippings.txt parser + dedupe
 - `clippy/epub_cfi.py` — EPUB spine/XHTML parsing, text search, CFI generation
+- `clippy/kindle_fetch.py` — pulls My Clippings.txt off a USB Kindle (mass storage or MTP)
 - `clippy/validate.py` — validates CFI generation against existing Books annotations

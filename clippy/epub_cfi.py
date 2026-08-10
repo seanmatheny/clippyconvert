@@ -138,6 +138,37 @@ def normalize_with_map(s: str):
     return "".join(out), idx_map
 
 
+def _seed_candidates(hay: str, needle: str, seed_len: int = 12, max_hits: int = 50):
+    """Yield (start, votes) for offsets in hay where a fuzzy match of needle
+    could plausibly begin.
+
+    Takes exact seed_len chunks of the needle at seed_len strides and locates
+    them in hay with str.find (C speed). A fuzzy match must contain at least
+    one unbroken seed-sized run, so every real match yields a candidate — and
+    since most of its seeds land intact at consistent alignment, it collects
+    many votes, while a coincidental phrase hit collects one. Candidates
+    within seed_len of each other are merged, summing votes.
+    """
+    if len(needle) < seed_len:
+        seed_len = max(6, len(needle))
+    starts = []
+    for off in range(0, len(needle) - seed_len + 1, seed_len):
+        seed = needle[off : off + seed_len]
+        i = hay.find(seed)
+        hits = 0
+        while i >= 0 and hits < max_hits:
+            starts.append(max(0, i - off))
+            hits += 1
+            i = hay.find(seed, i + 1)
+    merged = []  # [start, votes]
+    for s in sorted(starts):
+        if merged and s - merged[-1][0] < seed_len:
+            merged[-1][1] += 1
+        else:
+            merged.append([s, 1])
+    return [(s, v) for s, v in merged]
+
+
 class Epub:
     def __init__(self, path: str):
         self.files = EpubFiles(path)
@@ -311,15 +342,27 @@ class Epub:
                 end = j + len(tail)
                 if end - i <= len(norm_needle) * 1.3 + 60:
                     return self._loc_from_norm(doc, i, end - i, 0.95)
-        # fuzzy fallback
+        # fuzzy fallback: diffing the needle against a whole book is O(book *
+        # needle) in pure Python — minutes per clipping on a long book. Instead
+        # find exact seed chunks of the needle at C speed, then diff only small
+        # candidate windows around each hit.
         import difflib
 
         best = None
         min_block = max(6, min(12, len(norm_needle) // 6))
+        candidates = []
         for doc in self.spine:
             if not doc.norm_text:
                 continue
-            sm = difflib.SequenceMatcher(None, doc.norm_text, norm_needle, autojunk=False)
+            for start, votes in _seed_candidates(doc.norm_text, norm_needle):
+                candidates.append((votes, doc, start))
+        # The window diff is O(needle²); only the best-voted few can afford it.
+        candidates.sort(key=lambda t: -t[0])
+        for _votes, doc, start in candidates[:5]:
+            lo = max(0, start - 40)
+            hi = min(len(doc.norm_text), start + len(norm_needle) + 40)
+            window = doc.norm_text[lo:hi]
+            sm = difflib.SequenceMatcher(None, window, norm_needle, autojunk=False)
             blocks = [b for b in sm.get_matching_blocks() if b.size >= min_block]
             if not blocks:
                 continue
@@ -327,13 +370,13 @@ class Epub:
             score = covered / len(norm_needle)
             if score < min_score:
                 continue
-            start = blocks[0].a
-            end = blocks[-1].a + blocks[-1].size
+            w_start = blocks[0].a
+            w_end = blocks[-1].a + blocks[-1].size
             # sanity: matched window shouldn't be wildly longer than needle
-            if end - start > len(norm_needle) * 1.6 + 40:
+            if w_end - w_start > len(norm_needle) * 1.6 + 40:
                 continue
             if best is None or score > best[1]:
-                best = ((doc, start, end - start), score)
+                best = ((doc, lo + w_start, w_end - w_start), score)
         if best:
             (doc, start, ln), score = best
             return self._loc_from_norm(doc, start, ln, score)
