@@ -1,5 +1,17 @@
 # clippyconvert
 
+```
+   __
+  /  \      ___________________________________________
+  |  |     / It looks like you're importing Kindle     \
+  @  @    |  highlights into Apple Books.               |
+  |  |    |  Would you like some help with that?        |
+  || |/    \___________________________________________/
+  || ||
+  |\_/|
+  \___/
+```
+
 Convert Kindle `My Clippings.txt` highlights into native Apple Books highlights.
 
 ## How it works
