@@ -19,9 +19,7 @@ the annotation database first.
 
 import argparse
 import datetime
-import difflib
 import os
-import re
 import shutil
 import sqlite3
 import subprocess
@@ -32,6 +30,7 @@ import uuid
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from clippy.parse_clippings import parse_clippings, dedupe_highlights
 from clippy.epub_cfi import Epub, normalize_with_map
+from clippy.match import match_book
 
 HOME = os.path.expanduser("~")
 LIB_DB = f"{HOME}/Library/Containers/com.apple.iBooksX/Data/Documents/BKLibrary/BKLibrary-1-091020131601.sqlite"
@@ -54,19 +53,6 @@ CLIPPY = r"""
 """
 
 
-def norm_title(s: str) -> str:
-    s = s.replace("_", " ")
-    s = re.sub(r"--.*$", "", s)  # strip "-- Author -- Year -- ... Anna's Archive" tails
-    s = re.sub(r"[^\w\s]", " ", s.lower())
-    s = re.sub(r"\s+", " ", s).strip()
-    return s
-
-
-def title_tokens(s: str) -> set:
-    stop = {"the", "a", "an", "of", "and", "in", "to", "for", "on", "s"}
-    return {t for t in norm_title(s).split() if t not in stop}
-
-
 def load_library():
     con = sqlite3.connect(f"file:{LIB_DB}?mode=ro", uri=True)
     rows = con.execute(
@@ -75,31 +61,6 @@ def load_library():
     ).fetchall()
     con.close()
     return [r for r in rows if os.path.exists(r[3]) and not r[3].endswith(".pdf")]
-
-
-def match_book(kindle_title, kindle_author, library):
-    """Return (assetid, title, path) or None."""
-    kt = title_tokens(kindle_title)
-    if not kt:
-        return None
-    best, best_score = None, 0.0
-    for assetid, title, author, path in library:
-        lt = title_tokens(title)
-        if not lt:
-            continue
-        overlap = len(kt & lt) / min(len(kt), len(lt))
-        ratio = difflib.SequenceMatcher(None, norm_title(kindle_title), norm_title(title)).ratio()
-        score = max(overlap, ratio)
-        # author corroboration
-        if kindle_author and author:
-            ka, la = title_tokens(kindle_author), title_tokens(author)
-            if ka and la and not (ka & la):
-                score -= 0.25
-        if score > best_score:
-            best, best_score = (assetid, title, path), score
-    if best and best_score >= 0.75:
-        return best
-    return None
 
 
 def existing_annotation_keys(con, assetid):
@@ -162,7 +123,7 @@ def main():
         if not m:
             unmatched_books.append((ktitle, len(items)))
             continue
-        assetid, btitle, path = m
+        assetid, btitle, _author, path = m
         cfis, texts = existing_annotation_keys(ann_con, assetid)
         print(f"\n== {ktitle!r} -> {btitle!r}", flush=True)
         try:

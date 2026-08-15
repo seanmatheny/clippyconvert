@@ -1,0 +1,313 @@
+{
+  "captured_at": "2026-08-15T15:57:18",
+  "create": {
+    "action": 1,
+    "dirty_flag": 0,
+    "sync_behavior": 0,
+    "retry_count": 1,
+    "expiration_timestamp": ""
+  },
+  "create_rows": {
+    "server_view": {
+      "columns": [
+        "dataset",
+        "dataset_id",
+        "annotation_id",
+        "serialized_payload",
+        "created_time",
+        "modified_time"
+      ],
+      "added": [],
+      "removed": [
+        [
+          4,
+          "0FD4D8651C0845A7A68902EB9B9F70D9-PDOC-CR!PN270F57D567NC09KP826R8QSZN9-1",
+          "kindle.most_recent_read",
+          "{\"book_data\":{\"asin\":\"0FD4D8651C0845A7A68902EB9B9F70D9\",\"contentType\":\"PDOC\",\"guid\":\"CR!PN270F57D567NC09KP826R8QSZN9\",\"isOwnedByCustomer\":1,\"isSample\":0},\"device_name\":\"Sean's Scribe\",\"position\":{\"longPosition\":\"\",\"shortPosition\":256623}}",
+          46139156752,
+          1785553750000
+        ]
+      ]
+    },
+    "local_edit": {
+      "columns": [
+        "annotation_id",
+        "action",
+        "dataset",
+        "dataset_id",
+        "serialized_payload",
+        "dirty_flag",
+        "created_time",
+        "modified_time",
+        "retry_count",
+        "expiration_timestamp",
+        "sync_behavior"
+      ],
+      "added": [
+        [
+          "kindle.highlight-258526",
+          1,
+          1,
+          "0FD4D8651C0845A7A68902EB9B9F70D9-PDOC-CR!PN270F57D567NC09KP826R8QSZN9-1",
+          "{\"book_data\":{\"asin\":\"0FD4D8651C0845A7A68902EB9B9F70D9\",\"contentType\":\"PDOC\",\"guid\":\"CR!PN270F57D567NC09KP826R8QSZN9\",\"isOwnedByCustomer\":1,\"isSample\":0},\"created_time\":1786766202058,\"end_position\":{\"longPosition\":\"AUMDAAA2AQAA\",\"shortPosition\":258836},\"json_metadata\":\"{\\\"mchl_color\\\":\\\"yellow\\\"}\",\"last_modified\":1786766202058,\"position_type\":0,\"start_position\":{\"longPosition\":\"AUMDAAAAAAAA\",\"shortPosition\":258526},\"type\":\"HIGHLIGHT\"}",
+          0,
+          1786766202058,
+          1786766202058,
+          1,
+          "",
+          0
+        ],
+        [
+          "kindle.most_recent_read",
+          1,
+          4,
+          "0FD4D8651C0845A7A68902EB9B9F70D9-PDOC-CR!PN270F57D567NC09KP826R8QSZN9-1",
+          "{\"book_data\":{\"asin\":\"0FD4D8651C0845A7A68902EB9B9F70D9\",\"contentType\":\"PDOC\",\"guid\":\"CR!PN270F57D567NC09KP826R8QSZN9\",\"isOwnedByCustomer\":1,\"isSample\":0},\"device_name\":\"Local\",\"position\":{\"longPosition\":\"AUIDAADtAAAA\",\"shortPosition\":258319}}",
+          0,
+          1786766178575,
+          1786766178575,
+          1,
+          "",
+          0
+        ],
+        [
+          "kindle.note-258836",
+          1,
+          3,
+          "0FD4D8651C0845A7A68902EB9B9F70D9-PDOC-CR!PN270F57D567NC09KP826R8QSZN9-1",
+          "{\"book_data\":{\"asin\":\"0FD4D8651C0845A7A68902EB9B9F70D9\",\"contentType\":\"PDOC\",\"guid\":\"CR!PN270F57D567NC09KP826R8QSZN9\",\"isOwnedByCustomer\":1,\"isSample\":0},\"created_time\":1786766219633,\"end_position\":{\"longPosition\":\"AUMDAAA2AQAA\",\"shortPosition\":258836},\"json_metadata\":\"{\\\"note_text\\\":\\\"Test note for importing to books.\\\"}\",\"last_modified\":1786766219633,\"position_type\":0,\"start_position\":{\"longPosition\":\"AUMDAAA2AQAA\",\"shortPosition\":258836},\"type\":\"NOTE\"}",
+          0,
+          1786766219633,
+          1786766219633,
+          1,
+          "",
+          0
+        ]
+      ],
+      "removed": []
+    },
+    "nonsyncable_annotations": {
+      "columns": [
+        "annotation_id",
+        "book_id",
+        "dataset",
+        "start_position",
+        "end_position",
+        "created_time",
+        "modified_time",
+        "serialized_payload"
+      ],
+      "added": [
+        [
+          "kindle.waypoint-258319-1786766178579",
+          "0FD4D8651C0845A7A68902EB9B9F70D9-PDOC-CR!PN270F57D567NC09KP826R8QSZN9-1",
+          7,
+          "{\"longPosition\":\"AUIDAADtAAAA\",\"shortPosition\":258319}",
+          "{\"longPosition\":\"AUcDAACMAQAA\",\"shortPosition\":260432}",
+          1786766178579,
+          1786766178579,
+          "{\"bookData\":{\"asin\":\"0FD4D8651C0845A7A68902EB9B9F70D9\",\"contentType\":\"PDOC\",\"guid\":\"CR!PN270F57D567NC09KP826R8QSZN9\",\"isOwnedByCustomer\":1,\"isSample\":0},\"lastModified\":1786766178579}"
+        ],
+        [
+          "kindle.local_most_recent_read",
+          "0FD4D8651C0845A7A68902EB9B9F70D9-PDOC-CR!PN270F57D567NC09KP826R8QSZN9-1",
+          8,
+          "{\"longPosition\":\"AUIDAADtAAAA\",\"shortPosition\":258319}",
+          "{\"longPosition\":\"AUIDAADtAAAA\",\"shortPosition\":258319}",
+          1786766232071,
+          1786766232071,
+          "{\"book_data\":{\"asin\":\"0FD4D8651C0845A7A68902EB9B9F70D9\",\"contentType\":\"PDOC\",\"guid\":\"CR!PN270F57D567NC09KP826R8QSZN9\",\"isOwnedByCustomer\":1,\"isSample\":0},\"device_name\":\"Local\",\"state\":\"\"}"
+        ]
+      ],
+      "removed": [
+        [
+          "kindle.local_most_recent_read",
+          "0FD4D8651C0845A7A68902EB9B9F70D9-PDOC-CR!PN270F57D567NC09KP826R8QSZN9-1",
+          8,
+          "{\"longPosition\":\"\",\"shortPosition\":256623}",
+          "{\"longPosition\":\"\",\"shortPosition\":256623}",
+          1785553750000,
+          1785553750000,
+          "{\"book_data\":{\"asin\":\"0FD4D8651C0845A7A68902EB9B9F70D9\",\"contentType\":\"PDOC\",\"guid\":\"CR!PN270F57D567NC09KP826R8QSZN9\",\"isOwnedByCustomer\":1,\"isSample\":0},\"device_name\":\"Sean's Scribe\",\"state\":\"\"}"
+        ]
+      ]
+    }
+  },
+  "mirror_tables": [
+    "nonsyncable_annotations"
+  ],
+  "highlight_payload_example": {
+    "book_data": {
+      "asin": "0FD4D8651C0845A7A68902EB9B9F70D9",
+      "contentType": "PDOC",
+      "guid": "CR!PN270F57D567NC09KP826R8QSZN9",
+      "isOwnedByCustomer": 1,
+      "isSample": 0
+    },
+    "created_time": 1786766202058,
+    "end_position": {
+      "longPosition": "AUMDAAA2AQAA",
+      "shortPosition": 258836
+    },
+    "json_metadata": "{\"mchl_color\":\"yellow\"}",
+    "last_modified": 1786766202058,
+    "position_type": 0,
+    "start_position": {
+      "longPosition": "AUMDAAAAAAAA",
+      "shortPosition": 258526
+    },
+    "type": "HIGHLIGHT"
+  },
+  "note_payload_example": {
+    "book_data": {
+      "asin": "0FD4D8651C0845A7A68902EB9B9F70D9",
+      "contentType": "PDOC",
+      "guid": "CR!PN270F57D567NC09KP826R8QSZN9",
+      "isOwnedByCustomer": 1,
+      "isSample": 0
+    },
+    "created_time": 1786766219633,
+    "end_position": {
+      "longPosition": "AUMDAAA2AQAA",
+      "shortPosition": 258836
+    },
+    "json_metadata": "{\"note_text\":\"Test note for importing to books.\"}",
+    "last_modified": 1786766219633,
+    "position_type": 0,
+    "start_position": {
+      "longPosition": "AUMDAAA2AQAA",
+      "shortPosition": 258836
+    },
+    "type": "NOTE"
+  },
+  "note_offset": 0,
+  "delete_rows": {
+    "local_edit": {
+      "columns": [
+        "annotation_id",
+        "action",
+        "dataset",
+        "dataset_id",
+        "serialized_payload",
+        "dirty_flag",
+        "created_time",
+        "modified_time",
+        "retry_count",
+        "expiration_timestamp",
+        "sync_behavior"
+      ],
+      "added": [
+        [
+          "kindle.most_recent_read",
+          1,
+          4,
+          "0FD4D8651C0845A7A68902EB9B9F70D9-PDOC-CR!PN270F57D567NC09KP826R8QSZN9-1",
+          "{\"book_data\":{\"asin\":\"0FD4D8651C0845A7A68902EB9B9F70D9\",\"contentType\":\"PDOC\",\"guid\":\"CR!PN270F57D567NC09KP826R8QSZN9\",\"isOwnedByCustomer\":1,\"isSample\":0},\"device_name\":\"Local\",\"position\":{\"longPosition\":\"AUIDAADtAAAA\",\"shortPosition\":258319}}",
+          0,
+          1786766178575,
+          1786766256312,
+          1,
+          "",
+          0
+        ]
+      ],
+      "removed": [
+        [
+          "kindle.highlight-258526",
+          1,
+          1,
+          "0FD4D8651C0845A7A68902EB9B9F70D9-PDOC-CR!PN270F57D567NC09KP826R8QSZN9-1",
+          "{\"book_data\":{\"asin\":\"0FD4D8651C0845A7A68902EB9B9F70D9\",\"contentType\":\"PDOC\",\"guid\":\"CR!PN270F57D567NC09KP826R8QSZN9\",\"isOwnedByCustomer\":1,\"isSample\":0},\"created_time\":1786766202058,\"end_position\":{\"longPosition\":\"AUMDAAA2AQAA\",\"shortPosition\":258836},\"json_metadata\":\"{\\\"mchl_color\\\":\\\"yellow\\\"}\",\"last_modified\":1786766202058,\"position_type\":0,\"start_position\":{\"longPosition\":\"AUMDAAAAAAAA\",\"shortPosition\":258526},\"type\":\"HIGHLIGHT\"}",
+          0,
+          1786766202058,
+          1786766202058,
+          1,
+          "",
+          0
+        ],
+        [
+          "kindle.most_recent_read",
+          1,
+          4,
+          "0FD4D8651C0845A7A68902EB9B9F70D9-PDOC-CR!PN270F57D567NC09KP826R8QSZN9-1",
+          "{\"book_data\":{\"asin\":\"0FD4D8651C0845A7A68902EB9B9F70D9\",\"contentType\":\"PDOC\",\"guid\":\"CR!PN270F57D567NC09KP826R8QSZN9\",\"isOwnedByCustomer\":1,\"isSample\":0},\"device_name\":\"Local\",\"position\":{\"longPosition\":\"AUIDAADtAAAA\",\"shortPosition\":258319}}",
+          0,
+          1786766178575,
+          1786766178575,
+          1,
+          "",
+          0
+        ],
+        [
+          "kindle.note-258836",
+          1,
+          3,
+          "0FD4D8651C0845A7A68902EB9B9F70D9-PDOC-CR!PN270F57D567NC09KP826R8QSZN9-1",
+          "{\"book_data\":{\"asin\":\"0FD4D8651C0845A7A68902EB9B9F70D9\",\"contentType\":\"PDOC\",\"guid\":\"CR!PN270F57D567NC09KP826R8QSZN9\",\"isOwnedByCustomer\":1,\"isSample\":0},\"created_time\":1786766219633,\"end_position\":{\"longPosition\":\"AUMDAAA2AQAA\",\"shortPosition\":258836},\"json_metadata\":\"{\\\"note_text\\\":\\\"Test note for importing to books.\\\"}\",\"last_modified\":1786766219633,\"position_type\":0,\"start_position\":{\"longPosition\":\"AUMDAAA2AQAA\",\"shortPosition\":258836},\"type\":\"NOTE\"}",
+          0,
+          1786766219633,
+          1786766219633,
+          1,
+          "",
+          0
+        ]
+      ]
+    },
+    "nonsyncable_annotations": {
+      "columns": [
+        "annotation_id",
+        "book_id",
+        "dataset",
+        "start_position",
+        "end_position",
+        "created_time",
+        "modified_time",
+        "serialized_payload"
+      ],
+      "added": [
+        [
+          "kindle.waypoint-258319-1786766256182",
+          "0FD4D8651C0845A7A68902EB9B9F70D9-PDOC-CR!PN270F57D567NC09KP826R8QSZN9-1",
+          7,
+          "{\"longPosition\":\"AUIDAADtAAAA\",\"shortPosition\":258319}",
+          "{\"longPosition\":\"AUcDAACMAQAA\",\"shortPosition\":260432}",
+          1786766256182,
+          1786766256182,
+          "{\"bookData\":{\"asin\":\"0FD4D8651C0845A7A68902EB9B9F70D9\",\"contentType\":\"PDOC\",\"guid\":\"CR!PN270F57D567NC09KP826R8QSZN9\",\"isOwnedByCustomer\":1,\"isSample\":0},\"lastModified\":1786766256182}"
+        ],
+        [
+          "kindle.local_most_recent_read",
+          "0FD4D8651C0845A7A68902EB9B9F70D9-PDOC-CR!PN270F57D567NC09KP826R8QSZN9-1",
+          8,
+          "{\"longPosition\":\"AUIDAADtAAAA\",\"shortPosition\":258319}",
+          "{\"longPosition\":\"AUIDAADtAAAA\",\"shortPosition\":258319}",
+          1786766292263,
+          1786766292263,
+          "{\"book_data\":{\"asin\":\"0FD4D8651C0845A7A68902EB9B9F70D9\",\"contentType\":\"PDOC\",\"guid\":\"CR!PN270F57D567NC09KP826R8QSZN9\",\"isOwnedByCustomer\":1,\"isSample\":0},\"device_name\":\"Local\",\"state\":\"\"}"
+        ]
+      ],
+      "removed": [
+        [
+          "kindle.waypoint-258319-1786766178579",
+          "0FD4D8651C0845A7A68902EB9B9F70D9-PDOC-CR!PN270F57D567NC09KP826R8QSZN9-1",
+          7,
+          "{\"longPosition\":\"AUIDAADtAAAA\",\"shortPosition\":258319}",
+          "{\"longPosition\":\"AUcDAACMAQAA\",\"shortPosition\":260432}",
+          1786766178579,
+          1786766178579,
+          "{\"bookData\":{\"asin\":\"0FD4D8651C0845A7A68902EB9B9F70D9\",\"contentType\":\"PDOC\",\"guid\":\"CR!PN270F57D567NC09KP826R8QSZN9\",\"isOwnedByCustomer\":1,\"isSample\":0},\"lastModified\":1786766178579}"
+        ],
+        [
+          "kindle.local_most_recent_read",
+          "0FD4D8651C0845A7A68902EB9B9F70D9-PDOC-CR!PN270F57D567NC09KP826R8QSZN9-1",
+          8,
+          "{\"longPosition\":\"AUIDAADtAAAA\",\"shortPosition\":258319}",
+          "{\"longPosition\":\"AUIDAADtAAAA\",\"shortPosition\":258319}",
+          1786766232071,
+          1786766232071,
+          "{\"book_data\":{\"asin\":\"0FD4D8651C0845A7A68902EB9B9F70D9\",\"contentType\":\"PDOC\",\"guid\":\"CR!PN270F57D567NC09KP826R8QSZN9\",\"isOwnedByCustomer\":1,\"isSample\":0},\"device_name\":\"Local\",\"state\":\"\"}"
+        ]
+      ]
+    }
+  }
+}
