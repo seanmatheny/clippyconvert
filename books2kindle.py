@@ -35,9 +35,9 @@ from clippy import ksdk
 from clippy import kfx
 from clippy.books_export import load_books_highlights, load_books_library
 from clippy.epub_cfi import normalize_with_map
-from clippy.kfx import KfxBook
+from clippy.kindle_annots import open_book
 from clippy.match import match_book
-from clippy.mobi import MobiBook, UnsupportedBook
+from clippy.mobi import UnsupportedBook
 from clippy.parse_clippings import parse_clippings, dedupe_highlights
 from clippy.textsearch import find_span, strip_footnote_markers
 
@@ -200,16 +200,6 @@ def cmd_capture(args):
 
 def kindle_books_by_id():
     return {b.bookid: b for b in ksdk.load_kindle_books()}
-
-
-def open_book(book):
-    """Open a Kindle book as its format-appropriate reader. Both readers share
-    the same interface (norm_text / byte_range_for_norm / extract_text /
-    text_length), so callers stay format-agnostic. Raises UnsupportedBook or
-    OSError on failure, as MobiBook does."""
-    if book.is_kfx:
-        return KfxBook.from_dir(book.path)
-    return MobiBook.from_file(book.path)
 
 
 def annotated_books(db):
