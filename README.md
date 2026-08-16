@@ -125,9 +125,17 @@ Details:
   highlight's end position.
 - Book matching is fuzzy on titles between the Books library and the Kindle
   app's `BookData.sqlite`.
-- MOBI/AZW books only for now (PalmDOC, unencrypted — which is what the app
-  stores for personal documents). KFX books are detected and reported but
-  skipped; PDF is unsupported.
+- Both MOBI/AZW (PalmDOC, unencrypted) and **KFX** books are supported. A KFX
+  annotation's shortPosition is a `pid` — a global counter that advances one
+  per rendered character — and its content is Amazon-Ion-serialized, so KFX
+  parsing is delegated to Calibre's "KFX Input" plugin (jhowell's `kfxlib`),
+  driven out of process via `calibre-debug` (see `clippy/kfx.py`). This needs
+  **Calibre installed with the KFX Input plugin**; extracted `(pid, text)`
+  chunks are cached under `~/Library/Caches/clippyconvert/`, so only the first
+  run pays the extraction cost. The KFX position math was validated by
+  round-tripping ~640 existing KFX highlights across 28 books (97%+ exact,
+  the rest ±1–4 positions at footnote/boundary markers, same as MOBI). PDF is
+  unsupported.
 - `--apply` quits the Kindle app and backs up `ksdk_annotation_v1.db` to
   `backups/<timestamp>/` first. After the app relaunches and syncs, the
   `local_edit` queue should drain to zero — if rows linger with a growing
@@ -158,6 +166,8 @@ cp backups/<timestamp>/ksdk_annotation_v1.db* \
 - `clippy/textsearch.py` — normalized passage search (exact/anchor/fuzzy), shared by both directions
 - `clippy/match.py` — fuzzy title/author book matching, shared by both directions
 - `clippy/mobi.py` — minimal MOBI/AZW reader: PalmDOC decompression, byte↔text position maps
+- `clippy/kfx.py` — KFX reader mirroring `mobi.py`'s interface: drives Calibre's KFX Input plugin, caches `(pid, text)` chunks, builds text↔position maps
+- `clippy/kfx_extract.py` — helper run under `calibre-debug` (Calibre's Python) that decodes a KFX book via `kfxlib` and dumps its position chunks as JSON
 - `clippy/books_export.py` — reads Apple Books annotations as a sync source
 - `clippy/ksdk.py` — Kindle app DB access (BookData.sqlite, ksdk_annotation_v1.db) and the local_edit writer
 - `clippy/kindle_fetch.py` — pulls My Clippings.txt off a USB Kindle (mass storage or MTP)

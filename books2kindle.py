@@ -32,8 +32,10 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from clippy import ksdk
+from clippy import kfx
 from clippy.books_export import load_books_highlights, load_books_library
 from clippy.epub_cfi import normalize_with_map
+from clippy.kfx import KfxBook
 from clippy.match import match_book
 from clippy.mobi import MobiBook, UnsupportedBook
 from clippy.parse_clippings import parse_clippings, dedupe_highlights
@@ -200,8 +202,19 @@ def kindle_books_by_id():
     return {b.bookid: b for b in ksdk.load_kindle_books()}
 
 
-def annotated_mobi_books(db):
-    """[(KindleBook, [KindleAnnotation])] for MOBI books with synced highlights."""
+def open_book(book):
+    """Open a Kindle book as its format-appropriate reader. Both readers share
+    the same interface (norm_text / byte_range_for_norm / extract_text /
+    text_length), so callers stay format-agnostic. Raises UnsupportedBook or
+    OSError on failure, as MobiBook does."""
+    if book.is_kfx:
+        return KfxBook.from_dir(book.path)
+    return MobiBook.from_file(book.path)
+
+
+def annotated_books(db):
+    """[(KindleBook, [KindleAnnotation])] for MOBI/KFX books with synced
+    highlights — the ground truth for `validate`."""
     books = kindle_books_by_id()
     con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
     ids = [r[0] for r in con.execute(
@@ -211,7 +224,7 @@ def annotated_mobi_books(db):
     out = []
     for did in ids:
         book = books.get(did.split("-")[0])
-        if book and book.is_mobi:
+        if book and (book.is_mobi or book.is_kfx):
             anns = [a for a in ksdk.load_existing_annotations(db, did)
                     if a.source == "server_view"
                     and a.dataset in (ksdk.DATASET_HIGHLIGHT, ksdk.DATASET_UNDERLINE)]
@@ -236,14 +249,17 @@ def load_clippings_texts():
 
 def cmd_validate(args):
     db = ksdk.find_ksdk_db()
-    targets = annotated_mobi_books(db)
+    targets = annotated_books(db)
     clippings = load_clippings_texts()
+    kfx.prewarm([b.path for b, _ in targets if b.is_kfx])
+    n_mobi = sum(1 for b, _ in targets if b.is_mobi)
+    n_kfx = sum(1 for b, _ in targets if b.is_kfx)
     print(f"{sum(len(a) for _, a in targets)} ground-truth highlights across "
-          f"{len(targets)} MOBI books\n")
+          f"{len(targets)} books ({n_mobi} MOBI, {n_kfx} KFX)\n")
     t_exact = t_close = t_miss = 0
     for book, anns in sorted(targets, key=lambda t: t[0].title):
         try:
-            mb = MobiBook.from_file(book.path)
+            mb = open_book(book)
         except (UnsupportedBook, OSError) as e:
             print(f"== {book.title[:60]!r}: PARSE FAIL {e}")
             continue
@@ -311,8 +327,22 @@ def cmd_sync(args):
     print(f"{len(kindle_books)} books in the Kindle app library")
     clippings = load_clippings_texts()
 
+    # Extract KFX content up front so Calibre starts once, not once per book.
+    kfx_dirs = []
+    for aid, items in by_asset.items():
+        btitle, bauthor = titles.get(aid, (aid, ""))
+        if args.books and args.books.lower() not in btitle.lower():
+            continue
+        m = match_book(btitle, bauthor, kindle_lib)
+        if m and by_id[m[0]].is_kfx:
+            kfx_dirs.append(by_id[m[0]].path)
+    if kfx_dirs:
+        print(f"extracting {len(kfx_dirs)} KFX book(s) via Calibre "
+              "(first run only; cached after)...", flush=True)
+        kfx.prewarm(kfx_dirs)
+
     plan = []  # (book, [(highlight, start, end)])
-    unmatched, kfx_books = [], []
+    unmatched = []
     for aid, items in sorted(by_asset.items(), key=lambda kv: titles.get(kv[0], ("~",))[0]):
         btitle, bauthor = titles.get(aid, (aid, ""))
         if args.books and args.books.lower() not in btitle.lower():
@@ -322,17 +352,14 @@ def cmd_sync(args):
             unmatched.append((btitle, len(items)))
             continue
         book = by_id[m[0]]
-        if book.is_kfx:
-            kfx_books.append((btitle, book.title, len(items)))
-            continue
-        if not book.is_mobi:
+        if not (book.is_mobi or book.is_kfx):
             unmatched.append((f"{btitle} [unsupported format {book.mime}]", len(items)))
             continue
         print(f"\n== {btitle!r} -> {book.title!r}", flush=True)
         try:
-            mb = MobiBook.from_file(book.path)
+            mb = open_book(book)
         except (UnsupportedBook, OSError) as e:
-            print(f"   MOBI parse failed: {e}")
+            print(f"   {'KFX' if book.is_kfx else 'MOBI'} parse failed: {e}")
             continue
         if book.maxpos is not None and mb.text_length != book.maxpos:
             print(f"   SKIP: textLength {mb.text_length} != app maxpos {book.maxpos} "
@@ -403,10 +430,6 @@ def cmd_sync(args):
         print("\nBooks not found in the Kindle library (skipped):")
         for t, n in unmatched:
             print(f"  {n:4d}  {t}")
-    if kfx_books:
-        print("\nKFX books (phase 2, skipped for now):")
-        for bt, kt, n in kfx_books:
-            print(f"  {n:4d}  {bt} -> {kt}")
 
     total = sum(len(f) for _, f in plan)
     if args.limit is not None and total > args.limit:
