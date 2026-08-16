@@ -31,24 +31,43 @@ range is converted to a CFI — the same representation Books itself writes.
 The CFI generator was validated against 161 real Apple Books annotations across
 4 books (byte-identical CFIs for 90%, ±1-char boundary differences for the rest).
 
+By default the highlights come from the **Kindle app's synced database** — no
+cable needed, because highlights made on a Kindle device sync there wirelessly
+through Amazon. That database stores positions without text, so each passage is
+reconstructed from the book's own MOBI/KFX file (the exact reverse of
+`books2kindle`, and the same readers) before being located in the EPUB. A
+`My Clippings.txt` file can be used instead, including one pulled off a
+USB-connected Kindle.
+
 ## Usage
 
 ```sh
-# Dry run: parse, match books, locate passages, report — writes nothing
-python3 kindle2books.py "My Clippings.txt"
+# Dry run from the Kindle app database (default source): match, locate, report
+python3 kindle2books.py sync
 
 # Limit to books whose Kindle title contains a substring
-python3 kindle2books.py "My Clippings.txt" --books "red mars"
+python3 kindle2books.py sync --books "red mars"
 
 # Actually import (quits Books, backs up the annotation DB to backups/<timestamp>/ first)
-python3 kindle2books.py "My Clippings.txt" --apply
+python3 kindle2books.py sync --apply
 
-# One-command workflow: pull My Clippings.txt from a USB-connected Kindle, then import
-python3 kindle2books.py --from-kindle --apply
+# Import from a My Clippings.txt file instead of the app DB
+python3 kindle2books.py sync --from-clippings "My Clippings.txt"
+python3 kindle2books.py sync "My Clippings.txt"     # positional path, same thing
+
+# Pull My Clippings.txt from a USB-connected Kindle, then import from it
+python3 kindle2books.py sync --from-kindle --apply
 ```
 
-`--from-kindle` fetches the clippings file straight off the Kindle into the
-clippings path (default `./My Clippings.txt`), then continues as normal.
+The **default (no path, no `--from-kindle`) reads the Kindle app database** and
+needs the book downloaded in the app (to reconstruct highlight text) and
+present in Books as an EPUB. It reflects the current synced state — highlights
+you deleted are gone — but can't see highlights the device hasn't synced yet,
+or books not in the app; use a clippings file for those.
+
+`--from-clippings PATH` (or a positional path) imports from a `My Clippings.txt`
+file, which carries its own text and so covers books absent from the Kindle
+app. `--from-kindle` fetches that file straight off a connected Kindle first.
 It supports both transports: older Kindles that mount as a USB drive
 (`/Volumes/Kindle/documents/My Clippings.txt`) and newer Kindles / Scribe
 that use MTP. The MTP path requires libmtp (`brew install libmtp`) and matches
@@ -57,10 +76,12 @@ Android File Transfer first — only one program can hold the MTP connection.
 
 Details:
 
-- `Your Note` and `Bookmark` entries are ignored; `<You have reached the
+- Notes and Bookmarks are ignored; from a clippings file, `<You have reached the
   clipping limit>` placeholders are dropped.
-- Kindle logs a new entry each time a highlight is adjusted; overlapping
-  location ranges in the same book are deduplicated (last version wins).
+- From a clippings file, Kindle logs a new entry each time a highlight is
+  adjusted, so overlapping location ranges in the same book are deduplicated
+  (last version wins); the app database is already the canonical synced state
+  and needs no dedupe.
 - Kindle titles are fuzzy-matched against the Books library
   (`BKLibrary-1-091020131601.sqlite`); books without a local EPUB are skipped
   and reported.
@@ -168,6 +189,7 @@ cp backups/<timestamp>/ksdk_annotation_v1.db* \
 - `clippy/mobi.py` — minimal MOBI/AZW reader: PalmDOC decompression, byte↔text position maps
 - `clippy/kfx.py` — KFX reader mirroring `mobi.py`'s interface: drives Calibre's KFX Input plugin, caches `(pid, text)` chunks, builds text↔position maps
 - `clippy/kfx_extract.py` — helper run under `calibre-debug` (Calibre's Python) that decodes a KFX book via `kfxlib` and dumps its position chunks as JSON
+- `clippy/kindle_annots.py` — reads the Kindle app's synced highlights (server_view) and reconstructs their text from the book file; the default source for `kindle2books.py`
 - `clippy/books_export.py` — reads Apple Books annotations as a sync source
 - `clippy/ksdk.py` — Kindle app DB access (BookData.sqlite, ksdk_annotation_v1.db) and the local_edit writer
 - `clippy/kindle_fetch.py` — pulls My Clippings.txt off a USB Kindle (mass storage or MTP)
