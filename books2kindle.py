@@ -39,6 +39,7 @@ from clippy.kindle_annots import open_book
 from clippy.match import match_book
 from clippy.mobi import UnsupportedBook
 from clippy.parse_clippings import parse_clippings, dedupe_highlights
+from clippy.term import maybe_green
 from clippy.textsearch import find_span, strip_footnote_markers
 
 REPO_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -345,15 +346,17 @@ def cmd_sync(args):
         if not (book.is_mobi or book.is_kfx):
             unmatched.append((f"{btitle} [unsupported format {book.mime}]", len(items)))
             continue
-        print(f"\n== {btitle!r} -> {book.title!r}", flush=True)
+        # The header is printed after the search so it can be coloured by the
+        # outcome; the live progress line carries the title in the meantime.
+        head = f"== {btitle!r} -> {book.title!r}"
         try:
             mb = open_book(book)
         except (UnsupportedBook, OSError) as e:
-            print(f"   {'KFX' if book.is_kfx else 'MOBI'} parse failed: {e}")
+            print(f"\n{head}\n   {'KFX' if book.is_kfx else 'MOBI'} parse failed: {e}")
             continue
         if book.maxpos is not None and mb.text_length != book.maxpos:
-            print(f"   SKIP: textLength {mb.text_length} != app maxpos {book.maxpos} "
-                  "(position space mismatch)")
+            print(f"\n{head}\n   SKIP: textLength {mb.text_length} != app maxpos "
+                  f"{book.maxpos} (position space mismatch)")
             continue
         existing = ksdk.load_existing_annotations(db, book.dataset_id)
         existing_ranges = [(a.start, a.end) for a in existing
@@ -368,10 +371,11 @@ def cmd_sync(args):
 
         live = sys.stdout.isatty()
         found, dupes, echoes, misses, weak = [], 0, 0, [], []
+        collisions = []
         for i, h in enumerate(items, 1):
             if live:
-                print(f"\r   searching {i}/{len(items)}: {h.text[:50]!r}\x1b[K",
-                      end="", flush=True)
+                print(f"\r   {book.title[:28]}: searching {i}/{len(items)}: "
+                      f"{h.text[:40]!r}\x1b[K", end="", flush=True)
             needle = norm_key(h.text)
             if not needle:
                 continue
@@ -399,16 +403,22 @@ def cmd_sync(args):
                 continue
             ann_id = f"kindle.{'underline' if h.is_underline else 'highlight'}-{s}"
             if ann_id in existing_ids or any(s == s3 for _, s3, _ in found):
-                print(f"\r   COLLISION at start byte {s}, keeping first: "
-                      f"{h.text[:50]!r}\x1b[K")
+                collisions.append(f"     COLLISION at start byte {s}, keeping first: "
+                                  f"{h.text[:50]!r}")
                 dupes += 1
                 continue
             found.append((h, s, e))
         if live:
             print("\r\x1b[K", end="")
         n_notes = sum(1 for h, _, _ in found if h.note)
-        print(f"   matched {len(found)} ({n_notes} with notes), weak {len(weak)}, "
-              f"missed {len(misses)}, duplicates {dupes}, clippings-echoes {echoes}")
+        new_matches = bool(found)
+        print("\n" + maybe_green(head, new_matches))
+        print(maybe_green(
+            f"   matched {len(found)} ({n_notes} with notes), weak {len(weak)}, "
+            f"missed {len(misses)}, duplicates {dupes}, clippings-echoes {echoes}",
+            new_matches))
+        for line in collisions:
+            print(line)
         for h in misses:
             print(f"     MISS: {h.text[:70]!r}")
         for h, score in weak:

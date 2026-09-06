@@ -55,6 +55,15 @@ class KindleBook:
     mime: str
     guid: str  # ZPERASINGUID, used verbatim in dataset_id and payloads
     maxpos: Optional[int]  # ZRAWMAXPOSITION == decompressed textLength
+    is_dictionary: bool = False
+    state: Optional[int] = None  # ZRAWBOOKSTATE: 3 == present locally, 0 == not
+
+    @property
+    def downloaded(self) -> bool:
+        """The app lists every book it knows about, downloaded or not; only a
+        downloaded one has its file on disk (and only then can its highlights
+        be read back as text)."""
+        return os.path.exists(self.path)
 
     @property
     def content_type(self) -> str:
@@ -76,12 +85,13 @@ class KindleBook:
 def load_kindle_books() -> list:
     con = sqlite3.connect(f"file:{BOOKDATA_DB}?mode=ro", uri=True)
     rows = con.execute(
-        "SELECT ZBOOKID, ZDISPLAYTITLE, ZPATH, ZMIMETYPE, ZPERASINGUID, ZRAWMAXPOSITION "
+        "SELECT ZBOOKID, ZDISPLAYTITLE, ZPATH, ZMIMETYPE, ZPERASINGUID, ZRAWMAXPOSITION, "
+        "ZRAWISDICTIONARY, ZRAWBOOKSTATE "
         "FROM ZBOOK WHERE ZDISPLAYTITLE IS NOT NULL AND ZPATH IS NOT NULL"
     ).fetchall()
     con.close()
     books = []
-    for bookid, title, path, mime, guid, maxpos in rows:
+    for bookid, title, path, mime, guid, maxpos, isdict, state in rows:
         if bookid.startswith("A:"):
             bookid = bookid[2:]
         if bookid.endswith("-0"):
@@ -95,9 +105,28 @@ def load_kindle_books() -> list:
                 mime=mime or "",
                 guid=guid or "",
                 maxpos=maxpos,
+                is_dictionary=bool(isdict),
+                state=state,
             )
         )
     return books
+
+
+def undownloaded_books(title_filter: Optional[str] = None) -> list:
+    """Books the Kindle app lists but has not fetched. Their highlights never
+    reach ksdk_annotation_v1.db (the app syncs annotations per downloaded
+    book), so kindle2books cannot see them at all until they are downloaded.
+
+    Dictionaries and PDFs are left out: dictionaries are shipped undownloaded
+    by design, and PDFs carry no reconstructable position space anyway."""
+    out = []
+    for b in load_kindle_books():
+        if b.downloaded or b.is_dictionary or b.mime == "application/pdf":
+            continue
+        if title_filter and title_filter.lower() not in b.title.lower():
+            continue
+        out.append(b)
+    return out
 
 
 @dataclass

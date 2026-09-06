@@ -57,13 +57,30 @@ python3 kindle2books.py sync "My Clippings.txt"     # positional path, same thin
 
 # Pull My Clippings.txt from a USB-connected Kindle, then import from it
 python3 kindle2books.py sync --from-kindle --apply
+
+# Ask the Kindle app to download any cloud-only books first, then import
+python3 kindle2books.py sync --download
 ```
+
+Books that gained new annotations are printed in **green**, so a run over a
+mostly-synced library shows at a glance what actually changed.
 
 The **default (no path, no `--from-kindle`) reads the Kindle app database** and
 needs the book downloaded in the app (to reconstruct highlight text) and
 present in Books as an EPUB. It reflects the current synced state — highlights
 you deleted are gone — but can't see highlights the device hasn't synced yet,
 or books not in the app; use a clippings file for those.
+
+The app only syncs annotations for books it holds **locally**, so a book left
+in the cloud contributes nothing — and its highlights can't be turned back into
+text anyway without the book file. Every run therefore lists the books the
+Kindle app has not downloaded, so they're no longer a silent gap, and
+`--download` asks the app to fetch them (via its `kindle://` library deep link)
+and waits for the files before importing. Personal documents can't be requested
+that way and are listed for manual download. A freshly downloaded book may need
+a moment for the app to sync its highlights — re-run if it reports none.
+Apple Books titles that aren't downloaded locally are listed too, since their
+Kindle highlights would otherwise be reported only as unmatched.
 
 `--from-clippings PATH` (or a positional path) imports from a `My Clippings.txt`
 file, which carries its own text and so covers books absent from the Kindle
@@ -193,5 +210,7 @@ cp backups/<timestamp>/ksdk_annotation_v1.db* \
 - `clippy/books_export.py` — reads Apple Books annotations as a sync source
 - `clippy/ksdk.py` — Kindle app DB access (BookData.sqlite, ksdk_annotation_v1.db) and the local_edit writer
 - `clippy/kindle_fetch.py` — pulls My Clippings.txt off a USB Kindle (mass storage or MTP)
+- `clippy/kindle_download.py` — asks the Kindle app to download cloud-only books via its `kindle://` deep link, and waits for them
+- `clippy/term.py` — the small ANSI helper that greens books with new annotations
 - `clippy/validate.py` — validates CFI generation against existing Books annotations
 - `ksdk_capture.json` — captured Kindle app edit-record codes (created by `books2kindle.py capture`)
