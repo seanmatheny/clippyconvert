@@ -1,3 +1,4 @@
 backups/
 clippy/__pycache__/
 __pycache__/
+.DS_Store

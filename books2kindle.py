@@ -32,6 +32,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from clippy import ksdk
+from clippy.access import require_container_access, BOOKS_CONTAINER, KINDLE_CONTAINER
 from clippy import kfx
 from clippy.books_export import load_books_highlights, load_books_library
 from clippy.epub_cfi import normalize_with_map
@@ -502,6 +503,7 @@ def main():
     sp.add_argument("--min-score", type=float, default=0.85,
                     help="min fuzzy text match score to sync")
     args = ap.parse_args()
+    require_container_access(KINDLE_CONTAINER, *([BOOKS_CONTAINER] if args.cmd == "sync" else []))
     {"capture": cmd_capture, "validate": cmd_validate, "sync": cmd_sync}[args.cmd](args)
 
 

@@ -49,6 +49,7 @@ from clippy.match import match_book
 from clippy.kindle_annots import load_kindle_highlights
 from clippy.term import maybe_green
 from clippy import ksdk
+from clippy.access import require_container_access, BOOKS_CONTAINER, KINDLE_CONTAINER
 
 HOME = os.path.expanduser("~")
 LIB_DB = f"{HOME}/Library/Containers/com.apple.iBooksX/Data/Documents/BKLibrary/BKLibrary-1-091020131601.sqlite"
@@ -166,6 +167,10 @@ def main():
     print(CLIPPY)
 
     clip_path = args.from_clippings or args.clippings
+    if args.from_kindle or clip_path:
+        require_container_access(BOOKS_CONTAINER)
+    else:
+        require_container_access(KINDLE_CONTAINER, BOOKS_CONTAINER)
     if args.from_kindle:
         from clippy.kindle_fetch import fetch_clippings, KindleFetchError
 
